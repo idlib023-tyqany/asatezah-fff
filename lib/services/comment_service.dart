@@ -93,7 +93,7 @@ class CommentService {
   /// معالجة استجابة الـ API واستخراج بيانات التعليق منها بشكل آمن
   Comment _parseCommentResponse(dynamic result) {
     if (result is! Map<String, dynamic>) {
-      throw FormatException('استجابة غير صالحة من الخادم');
+      throw const FormatException('استجابة غير صالحة من الخادم');
     }
 
     final commentData = result['data'] is Map<String, dynamic>

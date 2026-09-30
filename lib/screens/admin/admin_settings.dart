@@ -97,7 +97,7 @@ class _AdminSettingsState extends State<AdminSettings> {
 
   Future<void> _uploadLogo() async {
     // ✅ تم تحديث الاستدعاء إلى FilePicker.instance.pickFiles
-    final FilePickerResult? result = await FilePicker.instance.pickFiles(
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       withData: false,
     );

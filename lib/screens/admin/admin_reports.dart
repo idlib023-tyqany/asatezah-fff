@@ -159,7 +159,7 @@ class _AdminReportsState extends State<AdminReports> {
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: TextStyle(color: Colors.black87, fontSize: 13),
+              style: const TextStyle(color: Colors.black87, fontSize: 13),
               children: [
                 TextSpan(
                   text: '$title: ',

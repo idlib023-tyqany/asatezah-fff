@@ -1,0 +1,115 @@
+import java.util.Properties
+
+plugins {
+    id("com.android.application")
+    id("kotlin-android")
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+def signingPropertiesFile = rootProject.file("key.properties")
+def signingProperties = new Properties()
+if (signingPropertiesFile.exists()) {
+    signingPropertiesFile.withInputStream { signingProperties.load(it) }
+}
+
+def authPropertiesFile = rootProject.file("auth.properties")
+def authProperties = new Properties()
+if (authPropertiesFile.exists()) {
+    authPropertiesFile.withInputStream { authProperties.load(it) }
+}
+
+def facebookAppId = authProperties.getProperty("facebookAppId", "").trim()
+def facebookClientToken = authProperties.getProperty("facebookClientToken", "").trim()
+
+def releaseRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains("release")
+}
+if (releaseRequested && !signingPropertiesFile.exists()) {
+    throw new GradleException(
+        "Release signing is not configured. Create frontend/android/key.properties using README.md."
+    )
+}
+if (releaseRequested && (facebookAppId.isEmpty() || facebookClientToken.isEmpty())) {
+    throw new GradleException(
+        "Facebook Android sign-in is not configured. Add facebookAppId and facebookClientToken to frontend/android/auth.properties."
+    )
+}
+
+android {
+    namespace = "com.asatezah.asatezah"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    if (signingPropertiesFile.exists()) {
+        signingConfigs {
+            release {
+                def requiredProperties = [
+                    "storeFile",
+                    "storePassword",
+                    "keyAlias",
+                    "keyPassword"
+                ]
+                def missingProperties = requiredProperties.findAll {
+                    !signingProperties.getProperty(it)
+                }
+                if (!missingProperties.isEmpty()) {
+                    throw new GradleException(
+                        "Missing release signing properties: ${missingProperties.join(', ')}"
+                    )
+                }
+
+                def keystoreFile = file(signingProperties.getProperty("storeFile"))
+                if (!keystoreFile.isFile()) {
+                    throw new GradleException(
+                        "Release keystore does not exist: ${keystoreFile}"
+                    )
+                }
+
+                storeFile = keystoreFile
+                storePassword = signingProperties.getProperty("storePassword")
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        applicationId = "com.asatezah.asatezah"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        resValue "string", "facebook_app_id", facebookAppId.isEmpty() ? "0" : facebookAppId
+        resValue "string", "facebook_client_token", facebookClientToken.isEmpty() ? "missing" : facebookClientToken
+        resValue "string", "fb_login_protocol_scheme", "fb" + (facebookAppId.isEmpty() ? "0" : facebookAppId)
+    }
+
+    buildTypes {
+        debug {
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
+        }
+        release {
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
+            if (signingPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+}

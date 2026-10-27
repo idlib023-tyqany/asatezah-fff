@@ -3,19 +3,17 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import 'config/theme.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/library/home_screen.dart';
-import 'services/auth_service.dart';
-import 'widgets/app_logo.dart';
+import './core/theme/app_theme.dart';
+import './features/auth/auth_service.dart';
+import './features/auth/login/login_screen.dart';
+import './features/library/home/home_screen.dart';
+import './core/widgets/app_logo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // تهيئة خدمة المصادقة قبل تشغيل التطبيق
   await AuthService().init();
-
   runApp(const AsatezahApp());
 }
 
@@ -36,7 +34,6 @@ class _AsatezahAppState extends State<AsatezahApp> {
     _initConnectivity();
   }
 
-  /// الاستعلام عن حالة الاتصال والاشتراك بالتغييرات
   Future<void> _initConnectivity() async {
     final connectivity = Connectivity();
 
@@ -44,7 +41,7 @@ class _AsatezahAppState extends State<AsatezahApp> {
       final results = await connectivity.checkConnectivity();
       _updateOnlineStatus(results);
     } catch (_) {
-      // تجاهل الأخطاء أثناء الاستعلام الأولي
+      // تجاهل الاستثناءات غير المتوقعة على بعض الأجهزة القديمة
     }
 
     _subscription = connectivity.onConnectivityChanged.listen(_updateOnlineStatus);
@@ -60,7 +57,9 @@ class _AsatezahAppState extends State<AsatezahApp> {
     }
 
     if (_isOnline != isConnected) {
-      setState(() => _isOnline = isConnected);
+      if (mounted) {
+        setState(() => _isOnline = isConnected);
+      }
     }
   }
 
@@ -72,12 +71,22 @@ class _AsatezahAppState extends State<AsatezahApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'أساتذة',
-      theme: AppTheme.theme,
-      debugShowCheckedModeBanner: false,
+    final fontFamily = GoogleFonts.cairo().fontFamily;
+    final baseTextTheme = ThemeData.light().textTheme.apply(fontFamily: fontFamily);
+    final darkTextTheme = ThemeData.dark().textTheme.apply(fontFamily: fontFamily);
 
-      // إعدادات اللغة العربية
+    return MaterialApp(
+      title: AppTheme.appName,
+      theme: AppTheme.lightTheme.copyWith(
+        textTheme: baseTextTheme,
+        primaryTextTheme: baseTextTheme,
+      ),
+      darkTheme: AppTheme.darkTheme.copyWith(
+        textTheme: darkTextTheme,
+        primaryTextTheme: darkTextTheme,
+      ),
+      themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       supportedLocales: const [Locale('ar')],
       localizationsDelegates: const [
@@ -85,49 +94,41 @@ class _AsatezahAppState extends State<AsatezahApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-
-      // تغليف التطبيق بالشريط العلوي وشريط الاتصال بشكل آمن
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
+        return AnimatedTheme(
+          data: Theme.of(context),
+          duration: const Duration(milliseconds: 250),
           child: Scaffold(
-            backgroundColor: AppTheme.primaryDark, // خلفية الشريط العلوي (Notch area)
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: SafeArea(
-              bottom: false, // لعدم اقتطاع الشاشة من الأسفل
+              bottom: false,
               child: Column(
                 children: [
-                  // شريط الهوية العلوي
                   const _TopBrandBar(),
-
-                  // شريط حالة الاتصال مع حركة انزلاق ناعمة
-                  AnimatedSize(
+                  AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
-                    child: SizedBox(
-                      height: _isOnline ? 0 : null,
-                      width: double.infinity,
-                      child: Container(
-                        color: Colors.red.shade600,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: const Text(
-                          'أنت غير متصل بالإنترنت',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
+                    height: _isOnline ? 0 : 32,
+                    width: double.infinity,
+                    color: AppTheme.warningColor,
+                    alignment: Alignment.center,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: _isOnline ? 0.0 : 1.0,
+                      child: const Text(
+                        'أنت غير متصل بالإنترنت',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
                         ),
                       ),
                     ),
                   ),
-
-                  // الشاشات الداخلية (مغلفة بـ MediaQuery لضمان عمل الكيبورد بسلاسة)
                   Expanded(
                     child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        padding: EdgeInsets.zero, // منع تكرار SafeArea الداخلي
-                      ),
+                      data: MediaQuery.of(context).copyWith(padding: EdgeInsets.zero),
                       child: child ?? const SizedBox.shrink(),
                     ),
                   ),
@@ -137,15 +138,11 @@ class _AsatezahAppState extends State<AsatezahApp> {
           ),
         );
       },
-
       home: const RootScreen(),
     );
   }
 }
 
-// ==========================================
-// مكون شريط الهوية العلوي
-// ==========================================
 class _TopBrandBar extends StatelessWidget {
   const _TopBrandBar();
 
@@ -153,7 +150,7 @@ class _TopBrandBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 42,
+      height: 48,
       color: AppTheme.primaryDark,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: const Row(
@@ -163,7 +160,7 @@ class _TopBrandBar extends StatelessWidget {
           SizedBox(width: 8),
           Text(
             'أساتذة',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
           ),
         ],
       ),
@@ -171,9 +168,6 @@ class _TopBrandBar extends StatelessWidget {
   }
 }
 
-// ==========================================
-// RootScreen: توجيه المستخدم
-// ==========================================
 class RootScreen extends StatelessWidget {
   const RootScreen({super.key});
 
@@ -181,8 +175,8 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = AuthService();
 
-    return AnimatedBuilder(
-      animation: auth,
+    return ListenableBuilder(
+      listenable: auth,
       builder: (context, _) {
         return auth.isAuthenticated ? const HomeScreen() : const LoginScreen();
       },

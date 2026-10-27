@@ -30,7 +30,7 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+**/build/
 /coverage/
 
 # Symbolication related
@@ -43,6 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/frontend/android/app/debug
+/frontend/android/app/profile
+/frontend/android/app/release
 
 # Widget Preview related
 .widget_preview/
+# Android Native Build & C++ Artifacts
+**/android/.gradle/
+**/android/app/.cxx/
+**/android/app/build/
+**/.kotlin/
+
+# Local Environment Properties
+**/android/local.properties

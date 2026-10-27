@@ -1,11 +1,11 @@
 {
-    "name": "asatezah",
-    "short_name": "asatezah",
+    "name": "أساتذة - مكتبة رقمية تعليمية",
+    "short_name": "أساتذة",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0F2B48",
+    "theme_color": "#123A5D",
+    "description": "مكتبة رقمية تعليمية للملفات والموارد التعليمية.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

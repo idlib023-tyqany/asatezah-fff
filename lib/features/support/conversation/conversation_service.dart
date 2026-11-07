@@ -25,9 +25,12 @@ class SupportService {
   Future<List<Conversation>> fetchInbox() async {
     final result = await _api.get('/support');
 
-    final data = result['data'] as List<dynamic>? ?? (result is List ? result : []);
+    final data = result['data'];
+    if (data is! List) {
+      throw const FormatException('قائمة المحادثات الواردة من الخادم غير صالحة');
+    }
 
-    return (data as List)
+    return data
         .whereType<Map<String, dynamic>>()
         .map((e) {
           try {

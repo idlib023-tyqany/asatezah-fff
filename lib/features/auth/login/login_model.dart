@@ -1,5 +1,3 @@
-
-
 class SubjectModel {
   final int id;
   final String name;
@@ -23,7 +21,9 @@ class GradeModel {
       id: json['id'],
       name: json['name'],
       subjects:
-          (json['subjects'] as List<dynamic>?)?.map((subject) => SubjectModel.fromJson(subject)).toList() ??
+          (json['subjects'] as List<dynamic>?)
+              ?.map((subject) => SubjectModel.fromJson(subject))
+              .toList() ??
           [],
     );
   }
@@ -36,6 +36,9 @@ class User {
   final String role;
   final bool canContribute;
   final String? specialization;
+  final String? phoneNumber;
+  final bool emailVerified;
+  final bool phoneVerified;
 
   const User({
     required this.id,
@@ -44,11 +47,20 @@ class User {
     required this.role,
     required this.canContribute,
     this.specialization,
+    this.phoneNumber,
+    this.emailVerified = false,
+    this.phoneVerified = false,
   });
 
   /// كائن افتراضي فارغ للمستقبل أو الحالات الابتدائية
   factory User.empty() {
-    return const User(id: 0, name: '', email: '', role: 'guest', canContribute: false);
+    return const User(
+      id: 0,
+      name: '',
+      email: '',
+      role: 'guest',
+      canContribute: false,
+    );
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -62,6 +74,9 @@ class User {
           json['can_contribute'] == 1 ||
           json['can_contribute']?.toString().toLowerCase() == 'true',
       specialization: json['specialization'] as String?,
+      phoneNumber: json['phone_number'] as String?,
+      emailVerified: json['email_verified'] == true,
+      phoneVerified: json['phone_verified'] == true,
     );
   }
 
@@ -73,6 +88,9 @@ class User {
       'role': role,
       'can_contribute': canContribute,
       'specialization': specialization,
+      'phone_number': phoneNumber,
+      'email_verified': emailVerified,
+      'phone_verified': phoneVerified,
     };
   }
 
@@ -83,6 +101,9 @@ class User {
     String? role,
     bool? canContribute,
     String? specialization,
+    String? phoneNumber,
+    bool? emailVerified,
+    bool? phoneVerified,
   }) {
     return User(
       id: id ?? this.id,
@@ -91,6 +112,9 @@ class User {
       role: role ?? this.role,
       canContribute: canContribute ?? this.canContribute,
       specialization: specialization ?? this.specialization,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      emailVerified: emailVerified ?? this.emailVerified,
+      phoneVerified: phoneVerified ?? this.phoneVerified,
     );
   }
 
@@ -105,9 +129,22 @@ class User {
         other.email == email &&
         other.role == role &&
         other.canContribute == canContribute &&
-        other.specialization == specialization;
+        other.specialization == specialization &&
+        other.phoneNumber == phoneNumber &&
+        other.emailVerified == emailVerified &&
+        other.phoneVerified == phoneVerified;
   }
 
   @override
-  int get hashCode => Object.hash(id, name, email, role, canContribute, specialization);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    email,
+    role,
+    canContribute,
+    specialization,
+    phoneNumber,
+    emailVerified,
+    phoneVerified,
+  );
 }

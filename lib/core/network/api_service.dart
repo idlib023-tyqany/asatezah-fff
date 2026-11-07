@@ -41,17 +41,11 @@ class ApiService {
     String? token,
   }) => _request('GET', endpoint, queryParameters: queryParams, token: token);
 
-  Future<Map<String, dynamic>> post(
-    String endpoint, {
-    Map<String, dynamic>? body,
-    String? token,
-  }) => _request('POST', endpoint, data: body, token: token);
+  Future<Map<String, dynamic>> post(String endpoint, {Map<String, dynamic>? body, String? token}) =>
+      _request('POST', endpoint, data: body, token: token);
 
-  Future<Map<String, dynamic>> put(
-    String endpoint, {
-    Map<String, dynamic>? body,
-    String? token,
-  }) => _request('PUT', endpoint, data: body, token: token);
+  Future<Map<String, dynamic>> put(String endpoint, {Map<String, dynamic>? body, String? token}) =>
+      _request('PUT', endpoint, data: body, token: token);
 
   Future<Map<String, dynamic>> patch(
     String endpoint, {
@@ -72,9 +66,7 @@ class ApiService {
     String fileField = 'file',
     String? token,
   }) async {
-    if (kReleaseMode &&
-        (!ApiConfig.hasProductionApiUrl ||
-            !ApiConfig.hasProductionStorageUrl)) {
+    if (kReleaseMode && (!ApiConfig.hasProductionApiUrl || !ApiConfig.hasProductionStorageUrl)) {
       throw const ApiException(
         statusCode: 0,
         message: 'عناوين API أو التخزين غير مضبوطة للإصدار. أعد البناء باستخدام API_BASE_URL وSTORAGE_BASE_URL يشيران إلى خادم HTTPS.',
@@ -104,10 +96,7 @@ class ApiService {
         _client.normalizePath(endpoint),
         data: data,
         queryParameters: queryParameters,
-        options: Options(
-          method: method,
-          extra: token == null ? null : {'authToken': token},
-        ),
+        options: Options(method: method, extra: token == null ? null : {'authToken': token}),
       );
       return _normalizeResponse(response.data);
     } on DioException catch (error) {
@@ -124,18 +113,14 @@ class ApiService {
   ApiException _toApiException(DioException error) {
     final statusCode = error.response?.statusCode ?? 0;
     final responseData = error.response?.data;
-    final responseMap = responseData is Map
-        ? Map<String, dynamic>.from(responseData)
-        : null;
+    final responseMap = responseData is Map ? Map<String, dynamic>.from(responseData) : null;
     final rawMessage = responseMap?['message'];
 
     final message = switch (error.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout =>
-        'انتهت مهلة الاتصال بالخادم، يرجى المحاولة لاحقاً.',
-      DioExceptionType.connectionError =>
-        'لا يوجد اتصال بالإنترنت. تحقق من الشبكة وحاول مجدداً.',
+      DioExceptionType.receiveTimeout => 'انتهت مهلة الاتصال بالخادم، يرجى المحاولة لاحقاً.',
+      DioExceptionType.connectionError => 'لا يوجد اتصال بالإنترنت. تحقق من الشبكة وحاول مجدداً.',
       DioExceptionType.badCertificate => 'تعذّر إنشاء اتصال آمن بالخادم.',
       DioExceptionType.cancel => 'تم إلغاء الطلب.',
       _ => switch (statusCode) {
@@ -147,24 +132,14 @@ class ApiService {
     };
 
     final rawErrors = responseMap?['errors'];
-    final errors = rawErrors is Map
-        ? Map<String, dynamic>.from(rawErrors)
-        : null;
+    final errors = rawErrors is Map ? Map<String, dynamic>.from(rawErrors) : null;
 
-    return ApiException(
-      statusCode: statusCode,
-      message: message,
-      errors: errors,
-    );
+    return ApiException(statusCode: statusCode, message: message, errors: errors);
   }
 }
 
 class ApiException implements Exception {
-  const ApiException({
-    required this.statusCode,
-    required this.message,
-    this.errors,
-  });
+  const ApiException({required this.statusCode, required this.message, this.errors});
 
   final int statusCode;
   final String message;

@@ -1,19 +1,17 @@
 class ApiConfig {
-  // Use the emulator host for local Android emulators; physical phones need an explicit URL.
+  // تم تحديث القيمة الافتراضية لتشير إلى سيرفر Render الإنتاجي مباشرة
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/api',
+    defaultValue: 'https://asatezah-bbb.onrender.com/api',
   );
 
   static const String storageUrl = String.fromEnvironment(
     'STORAGE_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/storage',
+    defaultValue: 'https://asatezah-bbb.onrender.com/storage',
   );
 
-  static const String googleServerClientId = String.fromEnvironment(
-    'GOOGLE_SERVER_CLIENT_ID',
-  );
-  static const String facebookAppId = String.fromEnvironment('FACEBOOK_APP_ID');
+  // مفتاح جوجل جيميني (استبدل النص بمفتاحك الحقيقي من Google AI Studio)
+  static const String geminiApiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 20);

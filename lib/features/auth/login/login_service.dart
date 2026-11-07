@@ -1,8 +1,10 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:asatezah/core/network/api_service.dart';
+
 import 'login_model.dart';
 
 class AuthService extends ChangeNotifier {
@@ -71,7 +73,9 @@ class AuthService extends ChangeNotifier {
         return;
       }
 
-      _currentUser = User.fromJson(jsonDecode(userData) as Map<String, dynamic>);
+      _currentUser = User.fromJson(
+        jsonDecode(userData) as Map<String, dynamic>,
+      );
       await _api.setToken(_token);
 
       // التحقق من صحة التوكن من خلال الخادم عند فتح التطبيق
@@ -89,82 +93,154 @@ class AuthService extends ChangeNotifier {
   }
 
   /// تسجيل الدخول بالبريد وكلمة المرور
-  Future<void> login(String email, String password) async {
-    final result = await _api.post('/login', body: {'email': email.trim(), 'password': password});
-    await _handleAuthSuccess(result);
+  Future<Map<String, dynamic>> login(String email, String password) {
+    return _api.post(
+      '/login',
+      body: {'email': email.trim(), 'password': password},
+    );
   }
 
   /// تسجيل حساب جديد (أساسي)
-  Future<void> registerBasic(String email, String password, String passwordConfirmation) async {
+  Future<Map<String, dynamic>> registerBasic(
+    String email,
+    String phoneNumber,
+    String password,
+    String passwordConfirmation,
+  ) {
     final body = <String, dynamic>{
       'email': email.trim(),
+      'phone_number': phoneNumber.trim(),
       'password': password,
       'password_confirmation': passwordConfirmation,
     };
-    final result = await _api.post('/register', body: body);
-    await _handleAuthSuccess(result);
+    return _api.post('/register', body: body);
   }
 
   /// تسجيل حساب جديد (تفصيلي)
-  Future<void> register(
+  Future<Map<String, dynamic>> register(
     String name,
     String email,
     String password,
     String passwordConfirmation, {
+    required String phoneNumber,
     String? specialization,
     String? displayName,
-    String? phoneNumber,
     String? idNumber,
     String? trainerType,
-  }) async {
+  }) {
     final body = <String, dynamic>{
       'name': name.trim(),
       'email': email.trim(),
+      'phone_number': phoneNumber.trim(),
       'password': password,
       'password_confirmation': passwordConfirmation,
       if (_isNotBlank(specialization)) 'specialization': specialization!.trim(),
       if (_isNotBlank(displayName)) 'display_name': displayName!.trim(),
-      if (_isNotBlank(phoneNumber)) 'phone_number': phoneNumber!.trim(),
       if (_isNotBlank(idNumber)) 'id_number': idNumber!.trim(),
       if (_isNotBlank(trainerType)) 'trainer_type': trainerType!.trim(),
     };
 
-    final result = await _api.post('/register', body: body);
-    await _handleAuthSuccess(result);
-  }
-
-  /// تسجيل الدخول عبر جوجل
-  Future<void> loginWithGoogle(String idToken) async {
-    final result = await _api.post('/auth/google', body: {'id_token': idToken});
-    await _handleAuthSuccess(result);
-  }
-
-  /// تسجيل الدخول عبر فيسبوك
-  Future<void> loginWithFacebook(String accessToken) async {
-    final result = await _api.post('/auth/facebook', body: {'access_token': accessToken});
-    await _handleAuthSuccess(result);
+    return _api.post('/register', body: body);
   }
 
   /// تحديث بيانات الملف الشخصي
   Future<void> updateProfile({
     String? name,
     String? displayName,
-    String? phoneNumber,
     String? trainerType,
     String? specialization,
   }) async {
     final body = <String, dynamic>{
       if (_isNotBlank(name)) 'name': name!.trim(),
       if (_isNotBlank(displayName)) 'display_name': displayName!.trim(),
-      if (_isNotBlank(phoneNumber)) 'phone_number': phoneNumber!.trim(),
       if (_isNotBlank(trainerType)) 'trainer_type': trainerType!.trim(),
       if (_isNotBlank(specialization)) 'specialization': specialization!.trim(),
     };
 
     final result = await _api.put('/profile/update', body: body);
     _currentUser = User.fromJson(result['user'] as Map<String, dynamic>);
+    _token ??= _api.token;
     await _saveSession();
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> requestContactChange({
+    String? email,
+    String? phoneNumber,
+  }) {
+    return _api.post(
+      '/profile/contact-change',
+      body: {
+        if (_isNotBlank(email)) 'email': email!.trim(),
+        if (_isNotBlank(phoneNumber)) 'phone_number': phoneNumber!.trim(),
+      },
+    );
+  }
+
+  Future<void> verifyContactChange({
+    required String verificationId,
+    String? emailCode,
+    String? phoneCode,
+  }) async {
+    final result = await _api.post(
+      '/profile/contact-change/verify',
+      body: {
+        'verification_id': verificationId,
+        if (_isNotBlank(emailCode)) 'email_code': emailCode!.trim(),
+        if (_isNotBlank(phoneCode)) 'phone_code': phoneCode!.trim(),
+      },
+    );
+    _currentUser = User.fromJson(result['user'] as Map<String, dynamic>);
+    _token ??= _api.token;
+    await _saveSession();
+    notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> resendContactChange(String verificationId) {
+    return _api.post(
+      '/profile/contact-change/resend',
+      body: {'verification_id': verificationId},
+    );
+  }
+
+  Future<void> verifyAuthenticationCodes({
+    required String verificationId,
+    String? emailCode,
+    String? phoneCode,
+  }) async {
+    final result = await _api.post(
+      '/verification/confirm',
+      body: {
+        'verification_id': verificationId,
+        if (_isNotBlank(emailCode)) 'email_code': emailCode!.trim(),
+        if (_isNotBlank(phoneCode)) 'phone_code': phoneCode!.trim(),
+      },
+    );
+    await _handleAuthSuccess(result);
+  }
+
+  Future<Map<String, dynamic>> resendVerification(String verificationId) {
+    return _api.post(
+      '/verification/resend',
+      body: {'verification_id': verificationId},
+    );
+  }
+
+  Future<User> refreshCurrentUser() async {
+    final response = await _api.get('/user');
+    final userData = response['user'];
+    if (userData is! Map<String, dynamic>) {
+      throw const ApiException(
+        statusCode: 0,
+        message: 'تعذّر تحميل بيانات الحساب.',
+      );
+    }
+
+    _currentUser = User.fromJson(userData);
+    _token ??= _api.token;
+    await _saveSession();
+    notifyListeners();
+    return _currentUser!;
   }
 
   /// تسجيل الخروج
@@ -180,7 +256,10 @@ class AuthService extends ChangeNotifier {
 
   /// حذف الحساب نهائياً
   Future<void> deleteAccount(String password) async {
-    await _api.delete('/account', body: <String, dynamic>{'password': password});
+    await _api.delete(
+      '/account',
+      body: <String, dynamic>{'password': password},
+    );
     await _clearSession();
   }
 
@@ -196,7 +275,7 @@ class AuthService extends ChangeNotifier {
 
   /// حفظ البيانات محلياً وفي `ApiService`
   Future<void> _saveSession() async {
-    final token = _token;
+    final token = _token ?? _api.token;
     final user = _currentUser;
 
     if (token == null || token.isEmpty || user == null) {
@@ -204,6 +283,7 @@ class AuthService extends ChangeNotifier {
       return;
     }
 
+    _token = token;
     await _api.setToken(token);
     await _secureStorage.write(key: _keyAuthToken, value: token);
 

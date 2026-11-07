@@ -6,19 +6,14 @@ import 'api_config.dart';
 
 class ApiClient {
   ApiClient._() {
-    final baseUrl = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl
-        : '${ApiConfig.baseUrl}/';
+    final baseUrl = ApiConfig.baseUrl.endsWith('/') ? ApiConfig.baseUrl : '${ApiConfig.baseUrl}/';
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: ApiConfig.connectTimeout,
         receiveTimeout: ApiConfig.receiveTimeout,
         sendTimeout: ApiConfig.connectTimeout,
-        headers: const {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: const {'Accept': 'application/json', 'Content-Type': 'application/json'},
       ),
     );
     dio.interceptors.add(
@@ -65,6 +60,5 @@ class ApiClient {
     _token = value;
   }
 
-  String normalizePath(String endpoint) =>
-      endpoint.replaceFirst(RegExp(r'^/+'), '');
+  String normalizePath(String endpoint) => endpoint.replaceFirst(RegExp(r'^/+'), '');
 }

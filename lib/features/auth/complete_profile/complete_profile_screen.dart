@@ -15,11 +15,11 @@ class CompleteProfileScreen extends StatefulWidget {
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
+  final _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _firstName = TextEditingController();
   final _fatherName = TextEditingController();
   final _familyName = TextEditingController();
-  final _phoneNumber = TextEditingController();
   final _displayName = TextEditingController();
 
   bool _loading = false;
@@ -46,7 +46,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     _firstName.dispose();
     _fatherName.dispose();
     _familyName.dispose();
-    _phoneNumber.dispose();
     _displayName.dispose();
     super.dispose();
   }
@@ -54,6 +53,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   // 1. جلب الصفوف والمواد من الداشبورد عبر الـ API
   Future<void> _fetchGradesAndSubjects() async {
     try {
+      await _auth.init();
       // محاكاة جلب بيانات للتوضيح
       await Future.delayed(const Duration(milliseconds: 800));
       final List<Map<String, dynamic>> mockData = [
@@ -115,7 +115,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
     try {
       final fullName =
-          '${_firstName.text.trim()} ${_fatherName.text.trim()} ${_familyName.text.trim()}'.trim();
+          '${_firstName.text.trim()} ${_fatherName.text.trim()} ${_familyName.text.trim()}'
+              .trim();
 
       // تجهيز التخصص بناءً على المدخلات
       String specialization = '';
@@ -126,22 +127,24 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         specialization = '${_selectedSubject!.name} - ${_selectedGrade!.name}';
       }
 
-      await AuthService().updateProfile(
+      await _auth.updateProfile(
         name: fullName,
         displayName: _displayName.text.trim(),
-        phoneNumber: _phoneNumber.text.trim(),
         trainerType: _trainerType,
         specialization: specialization,
       );
 
       if (!mounted) return;
-      Navigator.of(context)
-          .pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const HomeScreen()), (_) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (_) => false,
+      );
     } on ApiException catch (error) {
       if (!mounted) return;
       setState(
-        () =>
-            _error = error.statusCode == 422 ? 'تحقق من البيانات المدخلة' : 'تعذّر الاتصال بالخادم',
+        () => _error = error.statusCode == 422
+            ? 'تحقق من البيانات المدخلة'
+            : 'تعذّر الاتصال بالخادم',
       );
     } catch (_) {
       if (!mounted) return;
@@ -153,9 +156,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   void _skipProfile() {
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
+    );
   }
 
   void _selectTrainerType(String? trainerType) {
@@ -184,7 +188,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       firstNameController: _firstName,
       fatherNameController: _fatherName,
       familyNameController: _familyName,
-      phoneNumberController: _phoneNumber,
       displayNameController: _displayName,
       grades: _grades,
       selectedGrade: _selectedGrade,

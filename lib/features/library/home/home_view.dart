@@ -1,3 +1,4 @@
+import 'package:asatezah/features/ai_assistant/ai_assistant_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:asatezah/core/theme/app_theme.dart';
@@ -28,9 +29,24 @@ class HomeView extends StatelessWidget {
         currentIndex: tabIndex,
         onTap: onTabSelected,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), label: 'المكتبة'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), label: 'المفضلة'),
-          BottomNavigationBarItem(icon: Icon(Icons.support_agent_outlined), label: 'الدعم'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.grid_view_outlined),
+            activeIcon: Icon(Icons.grid_view_rounded),
+            label: 'المكتبة',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_awesome_outlined),
+            activeIcon: Icon(Icons.auto_awesome, color: Colors.amber),
+            label: 'المساعد الذكي',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_outline),
+            label: 'المفضلة',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.support_agent_outlined),
+            label: 'الدعم',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.info_outline), label: 'حول'),
         ],
       ),
@@ -51,12 +67,14 @@ class LibraryTabView extends StatelessWidget {
   final Future<void> Function(FileItem file) onOpenFile;
   final ValueChanged<FileItem> onFavorite;
   final VoidCallback onSearch;
+  final VoidCallback onFolders;
   final VoidCallback onOfflineFiles;
   final VoidCallback onNotifications;
   final VoidCallback onAdmin;
   final VoidCallback onLogout;
   final VoidCallback onDeleteAccount;
   final VoidCallback onUpload;
+  final VoidCallback onProfile;
 
   const LibraryTabView({
     super.key,
@@ -72,12 +90,14 @@ class LibraryTabView extends StatelessWidget {
     required this.onOpenFile,
     required this.onFavorite,
     required this.onSearch,
+    required this.onFolders,
     required this.onOfflineFiles,
     required this.onNotifications,
     required this.onAdmin,
     required this.onLogout,
     required this.onDeleteAccount,
     required this.onUpload,
+    required this.onProfile,
   });
 
   @override
@@ -86,13 +106,35 @@ class LibraryTabView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('المكتبة'),
         actions: [
-          IconButton(icon: const Icon(Icons.search), tooltip: 'بوابة البحث', onPressed: onSearch),
+          IconButton(
+            icon: const Icon(Icons.auto_awesome, color: Colors.amber),
+            tooltip: 'مساعد أساتذة الذكي',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'بوابة البحث',
+            onPressed: onSearch,
+          ),
+          IconButton(
+            icon: const Icon(Icons.folder_open_outlined),
+            tooltip: 'المجلدات',
+            onPressed: onFolders,
+          ),
           IconButton(
             icon: const Icon(Icons.offline_pin_outlined),
             tooltip: 'الملفات المتاحة دون اتصال',
             onPressed: onOfflineFiles,
           ),
-          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: onNotifications),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: onNotifications,
+          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
@@ -102,15 +144,31 @@ class LibraryTabView extends StatelessWidget {
                   onDeleteAccount();
                 case 'offline':
                   onOfflineFiles();
+                case 'profile':
+                  onProfile();
                 case 'admin':
                   onAdmin();
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'offline', child: Text('الملفات دون اتصال')),
-              if (isAdmin) const PopupMenuItem(value: 'admin', child: Text('لوحة الإدارة')),
+              const PopupMenuItem(
+                value: 'profile',
+                child: Text('معلومات الحساب'),
+              ),
+              const PopupMenuItem(
+                value: 'offline',
+                child: Text('الملفات دون اتصال'),
+              ),
+              if (isAdmin)
+                const PopupMenuItem(
+                  value: 'admin',
+                  child: Text('لوحة الإدارة'),
+                ),
               const PopupMenuItem(value: 'logout', child: Text('تسجيل الخروج')),
-              const PopupMenuItem(value: 'delete_account', child: Text('حذف الحساب')),
+              const PopupMenuItem(
+                value: 'delete_account',
+                child: Text('حذف الحساب'),
+              ),
             ],
           ),
         ],
@@ -155,16 +213,19 @@ class LibraryTabView extends StatelessWidget {
                   : GridView.builder(
                       controller: scrollController,
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.68,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.68,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
                       itemCount: files.length + (isLoading ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index >= files.length) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         final file = files[index];
                         return FileCard(
@@ -181,7 +242,10 @@ class LibraryTabView extends StatelessWidget {
         ],
       ),
       floatingActionButton: canContribute
-          ? FloatingActionButton(onPressed: onUpload, child: const Icon(Icons.upload_file))
+          ? FloatingActionButton(
+              onPressed: onUpload,
+              child: const Icon(Icons.upload_file),
+            )
           : null,
     );
   }
@@ -199,9 +263,13 @@ class LibraryTabView extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
-          color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
+          color: selected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? Colors.transparent : AppTheme.borderColor),
+          border: Border.all(
+            color: selected ? Colors.transparent : AppTheme.borderColor,
+          ),
         ),
         child: Text(
           label,
@@ -240,7 +308,10 @@ class LibraryFilterOptions {
   final List<CatalogItem> categories;
   final List<CatalogItem> materials;
 
-  const LibraryFilterOptions({required this.categories, required this.materials});
+  const LibraryFilterOptions({
+    required this.categories,
+    required this.materials,
+  });
 }
 
 class LibraryFilterSheetView extends StatefulWidget {
@@ -297,7 +368,9 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -338,10 +411,16 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
                 ],
               ),
               const SizedBox(height: 20),
-              Text('التخصص / الصف', style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                'التخصص / الصف',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 8),
               if (_loading)
-                const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                )
               else if (_categories.isEmpty)
                 const Text('لا توجد تصنيفات')
               else
@@ -355,7 +434,9 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
                           selected: _category == category.id,
                           onSelected: (_) {
                             setState(
-                              () => _category = _category == category.id ? null : category.id,
+                              () => _category = _category == category.id
+                                  ? null
+                                  : category.id,
                             );
                           },
                         ),
@@ -366,7 +447,10 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
               Text('المادة', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               if (_loading)
-                const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                )
               else if (_materials.isEmpty)
                 const Text('لا توجد مواد')
               else
@@ -380,7 +464,9 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
                           selected: _material == material.id,
                           onSelected: (_) {
                             setState(
-                              () => _material = _material == material.id ? null : material.id,
+                              () => _material = _material == material.id
+                                  ? null
+                                  : material.id,
                             );
                           },
                         ),
@@ -391,7 +477,8 @@ class _LibraryFilterSheetViewState extends State<LibraryFilterSheetView> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => widget.onApply(_category, _material, _rating),
+                  onPressed: () =>
+                      widget.onApply(_category, _material, _rating),
                   child: const Text('تطبيق الفلاتر'),
                 ),
               ),
@@ -421,7 +508,8 @@ class _KeepAliveWrapper extends StatefulWidget {
   State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
 }
 
-class _KeepAliveWrapperState extends State<_KeepAliveWrapper> with AutomaticKeepAliveClientMixin {
+class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -431,3 +519,4 @@ class _KeepAliveWrapperState extends State<_KeepAliveWrapper> with AutomaticKeep
     return widget.child;
   }
 }
+

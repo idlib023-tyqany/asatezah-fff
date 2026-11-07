@@ -6,7 +6,12 @@ class CatalogItem {
   final String slug;
   final String? categoryName;
 
-  const CatalogItem({required this.id, required this.name, required this.slug, this.categoryName});
+  const CatalogItem({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.categoryName,
+  });
 
   bool get isValid => id > 0 && name.trim().isNotEmpty;
   bool get isInvalid => !isValid;
@@ -16,7 +21,8 @@ class CatalogItem {
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
-      categoryName: json['category_name'] as String? ?? json['category'] as String?,
+      categoryName:
+          json['category_name'] as String? ?? json['category'] as String?,
     );
   }
 
@@ -34,7 +40,12 @@ class CatalogItem {
 
   String toRawJson() => json.encode(toJson());
 
-  CatalogItem copyWith({int? id, String? name, String? slug, String? categoryName}) {
+  CatalogItem copyWith({
+    int? id,
+    String? name,
+    String? slug,
+    String? categoryName,
+  }) {
     return CatalogItem(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -88,8 +99,12 @@ class Comment {
           json['mine'] == true ||
           json['mine'] == 1 ||
           json['mine']?.toString().toLowerCase() == 'true',
-      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updated_at']?.toString() ?? '') ??
+          DateTime.now(),
     );
   }
 
@@ -212,7 +227,11 @@ class FileItem {
       description: json['description'] as String?,
       filename: json['filename'] as String? ?? '',
       mimeType: json['mime_type'] as String?,
-      fileSize: int.tryParse(json['file_size']?.toString() ?? '') ?? 0,
+      fileSize:
+          int.tryParse(
+            (json['file_size'] ?? json['raw_file_size'])?.toString() ?? '',
+          ) ??
+          0,
       category: json['category'] is Map<String, dynamic>
           ? CategoryInfo.fromJson(json['category'] as Map<String, dynamic>)
           : null,
@@ -221,14 +240,18 @@ class FileItem {
           : null,
       status: json['status'] as String? ?? 'pending',
       stats: FileStats.fromJson(
-        json['stats'] is Map<String, dynamic> ? json['stats'] as Map<String, dynamic> : {},
+        json['stats'] is Map<String, dynamic>
+            ? json['stats'] as Map<String, dynamic>
+            : {},
       ),
       isFavorite:
           json['is_favorite'] == true ||
           json['is_favorite'] == 1 ||
           json['is_favorite']?.toString().toLowerCase() == 'true',
       myRating: int.tryParse(json['my_rating']?.toString() ?? ''),
-      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
       localPath: json['local_path'] as String?,
     );
   }
@@ -351,8 +374,10 @@ class FileStats {
   factory FileStats.fromJson(Map<String, dynamic> json) {
     return FileStats(
       viewsCount: int.tryParse(json['views_count']?.toString() ?? '') ?? 0,
-      downloadsCount: int.tryParse(json['downloads_count']?.toString() ?? '') ?? 0,
-      favoritesCount: int.tryParse(json['favorites_count']?.toString() ?? '') ?? 0,
+      downloadsCount:
+          int.tryParse(json['downloads_count']?.toString() ?? '') ?? 0,
+      favoritesCount:
+          int.tryParse(json['favorites_count']?.toString() ?? '') ?? 0,
       avgRating: double.tryParse(json['avg_rating']?.toString() ?? '') ?? 0.0,
       ratingsCount: int.tryParse(json['ratings_count']?.toString() ?? '') ?? 0,
     );
@@ -396,8 +421,13 @@ class FileStats {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(viewsCount, downloadsCount, favoritesCount, avgRating, ratingsCount);
+  int get hashCode => Object.hash(
+    viewsCount,
+    downloadsCount,
+    favoritesCount,
+    avgRating,
+    ratingsCount,
+  );
 }
 
 class ResourceItem {

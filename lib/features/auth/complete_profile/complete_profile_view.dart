@@ -9,7 +9,6 @@ class CompleteProfileView extends StatelessWidget {
     required this.firstNameController,
     required this.fatherNameController,
     required this.familyNameController,
-    required this.phoneNumberController,
     required this.displayNameController,
     required this.grades,
     required this.selectedGrade,
@@ -30,7 +29,6 @@ class CompleteProfileView extends StatelessWidget {
   final TextEditingController firstNameController;
   final TextEditingController fatherNameController;
   final TextEditingController familyNameController;
-  final TextEditingController phoneNumberController;
   final TextEditingController displayNameController;
   final List<GradeModel> grades;
   final GradeModel? selectedGrade;
@@ -67,13 +65,19 @@ class CompleteProfileView extends StatelessWidget {
                           const Text(
                             'أكمل بيانات حسابك',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'يمكنك تجاوز هذه الخطوة والعودة إليها لاحقاً من ملفك الشخصي',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: theme.hintColor),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.hintColor,
+                            ),
                           ),
                           const SizedBox(height: 24),
                           Row(
@@ -81,9 +85,13 @@ class CompleteProfileView extends StatelessWidget {
                               Expanded(
                                 child: TextFormField(
                                   controller: firstNameController,
-                                  autofillHints: const [AutofillHints.givenName],
+                                  autofillHints: const [
+                                    AutofillHints.givenName,
+                                  ],
                                   textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(labelText: 'الاسم'),
+                                  decoration: const InputDecoration(
+                                    labelText: 'الاسم',
+                                  ),
                                   validator: _requiredValidator,
                                 ),
                               ),
@@ -92,7 +100,9 @@ class CompleteProfileView extends StatelessWidget {
                                 child: TextFormField(
                                   controller: fatherNameController,
                                   textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(labelText: 'اسم الأب'),
+                                  decoration: const InputDecoration(
+                                    labelText: 'اسم الأب',
+                                  ),
                                   validator: _requiredValidator,
                                 ),
                               ),
@@ -100,26 +110,17 @@ class CompleteProfileView extends StatelessWidget {
                               Expanded(
                                 child: TextFormField(
                                   controller: familyNameController,
-                                  autofillHints: const [AutofillHints.familyName],
+                                  autofillHints: const [
+                                    AutofillHints.familyName,
+                                  ],
                                   textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(labelText: 'الكنية'),
+                                  decoration: const InputDecoration(
+                                    labelText: 'الكنية',
+                                  ),
                                   validator: _requiredValidator,
                                 ),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: phoneNumberController,
-                            autofillHints: const [AutofillHints.telephoneNumber],
-                            keyboardType: TextInputType.phone,
-                            textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(
-                              labelText: 'رقم الهاتف',
-                              prefixIcon: Icon(Icons.phone_outlined),
-                            ),
-                            validator: (value) =>
-                                (value == null || value.trim().isEmpty) ? 'أدخل رقم الهاتف' : null,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -130,12 +131,17 @@ class CompleteProfileView extends StatelessWidget {
                               prefixIcon: Icon(Icons.badge_outlined),
                             ),
                             validator: (value) =>
-                                (value == null || value.trim().isEmpty) ? 'أدخل الاسم الظاهر' : null,
+                                (value == null || value.trim().isEmpty)
+                                ? 'أدخل الاسم الظاهر'
+                                : null,
                           ),
                           const SizedBox(height: 20),
                           const Text(
                             'نوع التخصص',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -145,7 +151,9 @@ class CompleteProfileView extends StatelessWidget {
                                   label: const Text('معلم صف'),
                                   selected: trainerType == 'class_teacher',
                                   onSelected: (selected) =>
-                                      onTrainerTypeSelected(selected ? 'class_teacher' : null),
+                                      onTrainerTypeSelected(
+                                        selected ? 'class_teacher' : null,
+                                      ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -154,7 +162,9 @@ class CompleteProfileView extends StatelessWidget {
                                   label: const Text('مدرس مادة'),
                                   selected: trainerType == 'subject_teacher',
                                   onSelected: (selected) =>
-                                      onTrainerTypeSelected(selected ? 'subject_teacher' : null),
+                                      onTrainerTypeSelected(
+                                        selected ? 'subject_teacher' : null,
+                                      ),
                                 ),
                               ),
                             ],
@@ -177,10 +187,12 @@ class CompleteProfileView extends StatelessWidget {
                                   )
                                   .toList(),
                               onChanged: onGradeSelected,
-                              validator: (value) => value == null ? 'يرجى اختيار الصف' : null,
+                              validator: (value) =>
+                                  value == null ? 'يرجى اختيار الصف' : null,
                             ),
                             const SizedBox(height: 16),
-                            if (trainerType == 'subject_teacher' && selectedGrade != null) ...[
+                            if (trainerType == 'subject_teacher' &&
+                                selectedGrade != null) ...[
                               DropdownButtonFormField<SubjectModel>(
                                 initialValue: selectedSubject,
                                 decoration: const InputDecoration(
@@ -197,7 +209,8 @@ class CompleteProfileView extends StatelessWidget {
                                     )
                                     .toList(),
                                 onChanged: onSubjectSelected,
-                                validator: (value) => value == null ? 'يرجى اختيار المادة' : null,
+                                validator: (value) =>
+                                    value == null ? 'يرجى اختيار المادة' : null,
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -207,13 +220,17 @@ class CompleteProfileView extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.error.withValues(alpha: 0.1),
+                                color: theme.colorScheme.error.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 errorMessage!,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: theme.colorScheme.error),
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
                               ),
                             ),
                           ],
@@ -224,7 +241,10 @@ class CompleteProfileView extends StatelessWidget {
                             text: 'حفظ البيانات',
                           ),
                           const SizedBox(height: 8),
-                          OutlinedButton(onPressed: onSkip, child: const Text('تخطي الآن')),
+                          OutlinedButton(
+                            onPressed: onSkip,
+                            child: const Text('تخطي الآن'),
+                          ),
                         ],
                       ),
                     ),

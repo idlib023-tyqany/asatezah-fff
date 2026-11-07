@@ -13,8 +13,6 @@ class LoginView extends StatelessWidget {
     required this.errorMessage,
     required this.onLogin,
     required this.onPasswordVisibilityChanged,
-    required this.onGoogleLogin,
-    required this.onFacebookLogin,
     required this.onRegister,
     super.key,
   });
@@ -27,8 +25,6 @@ class LoginView extends StatelessWidget {
   final String? errorMessage;
   final VoidCallback onLogin;
   final VoidCallback onPasswordVisibilityChanged;
-  final VoidCallback onGoogleLogin;
-  final VoidCallback onFacebookLogin;
   final VoidCallback onRegister;
 
   @override
@@ -163,43 +159,9 @@ class LoginView extends StatelessWidget {
                                 text: 'تسجيل الدخول',
                               ),
                               const SizedBox(height: 16),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Expanded(child: Divider()),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        'أو',
-                                        style: TextStyle(
-                                          color: theme.hintColor,
-                                        ),
-                                      ),
-                                    ),
-                                    const Expanded(child: Divider()),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              OutlinedButton.icon(
-                                onPressed: isLoading ? null : onGoogleLogin,
-                                icon: const Icon(Icons.g_mobiledata_rounded),
-                                label: const Text('الدخول بحساب جوجل'),
-                              ),
-                              const SizedBox(height: 8),
-                              OutlinedButton.icon(
-                                onPressed: isLoading ? null : onFacebookLogin,
-                                icon: const Icon(Icons.facebook_rounded),
-                                label: const Text('الدخول بحساب فيسبوك'),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   Text(
                                     'ليس لديك حساب؟',

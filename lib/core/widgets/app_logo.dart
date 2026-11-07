@@ -51,7 +51,7 @@ class AppLogo extends StatelessWidget {
     final theme = Theme.of(context);
 
     Widget imageWidget = Image.asset(
-      'assets/images/logo.png',
+      'assets/images/logo.png.jpg',
       width: size,
       height: size,
       fit: fit,
@@ -79,10 +79,14 @@ class AppLogo extends StatelessWidget {
 
     // دمج التنسيق الافتراضي مع التنسيقات والألوان المُمَرّرة
     final defaultStyle =
-        theme.textTheme.titleMedium?.merge(const TextStyle(fontWeight: FontWeight.bold)) ??
+        theme.textTheme.titleMedium?.merge(
+          const TextStyle(fontWeight: FontWeight.bold),
+        ) ??
         const TextStyle(fontWeight: FontWeight.bold);
 
-    final effectiveStyle = defaultStyle.copyWith(color: textColor).merge(textStyle);
+    final effectiveStyle = defaultStyle
+        .copyWith(color: textColor)
+        .merge(textStyle);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -90,7 +94,11 @@ class AppLogo extends StatelessWidget {
       children: [
         imageWidget,
         SizedBox(height: spacing),
-        Text(text ?? 'أساتذة', style: effectiveStyle, textAlign: TextAlign.center),
+        Text(
+          text ?? 'أساتذة',
+          style: effectiveStyle,
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

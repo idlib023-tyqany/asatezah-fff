@@ -6,9 +6,8 @@ import '../login/login_screen.dart';
 
 import 'package:asatezah/core/network/api_service.dart';
 import 'package:asatezah/features/auth/auth_service.dart';
-import 'package:asatezah/features/auth/social_auth_service.dart';
 
-import '../complete_profile/complete_profile_screen.dart';
+import '../otp/otp_verification_screen.dart';
 
 import './register_view.dart';
 
@@ -119,7 +118,9 @@ const List<String> primaryClasses = [
 ];
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({this.previewMode = false, super.key});
+
+  final bool previewMode;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -128,6 +129,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
+  final _phoneNumber = TextEditingController();
   final _password = TextEditingController();
   final _passwordConfirm = TextEditingController();
 
@@ -139,6 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _email.dispose();
+    _phoneNumber.dispose();
     _password.dispose();
     _passwordConfirm.dispose();
     super.dispose();
@@ -147,21 +150,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (widget.previewMode) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(
+            previewMode: true,
+            challenge: {
+              'verification_id': 'dummy_id',
+              'email': _email.text.trim(),
+              'phone_number': _phoneNumber.text.trim(),
+              'channels': ['email', 'phone'],
+              'destinations': {
+                'email': _email.text.trim(),
+                'phone': _phoneNumber.text.trim(),
+              },
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
     });
 
     try {
-      await AuthService().registerBasic(
+      final verification = await AuthService().registerBasic(
         _email.text.trim(),
+        _phoneNumber.text.trim(),
         _password.text,
         _passwordConfirm.text,
       );
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CompleteProfileScreen()),
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationScreen(challenge: verification),
+          ),
         );
       }
     } on ApiException catch (error) {
@@ -191,90 +218,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  Future<void> _googleSignUp() async {
-    if (_loading) return;
-
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      final idToken = await SocialAuthService.signInWithGoogle();
-      await AuthService().loginWithGoogle(idToken);
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CompleteProfileScreen()),
-        );
-      }
-    } on SocialAuthException catch (error) {
-      if (mounted) {
-        setState(() => _error = error.message);
-      }
-    } on ApiException catch (error) {
-      if (mounted) {
-        setState(
-          () => _error = error.message.isNotEmpty
-              ? error.message
-              : 'فشل التسجيل عبر Google.',
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(
-          () => _error =
-              'تعذّر التسجيل عبر Google. تحقق من إعدادات Firebase/Supabase.',
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
-  }
-
-  Future<void> _facebookSignUp() async {
-    if (_loading) return;
-
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      final accessToken = await SocialAuthService.signInWithFacebook();
-      await AuthService().loginWithFacebook(accessToken);
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CompleteProfileScreen()),
-        );
-      }
-    } on SocialAuthException catch (error) {
-      if (mounted) {
-        setState(() => _error = error.message);
-      }
-    } on ApiException catch (error) {
-      if (mounted) {
-        setState(
-          () => _error = error.message.isNotEmpty
-              ? error.message
-              : 'فشل التسجيل عبر Facebook.',
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(
-          () => _error =
-              'تعذّر التسجيل عبر Facebook. تحقق من إعدادات Facebook Login.',
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
-  }
-
   void _togglePasswordVisibility() {
     setState(() => _passwordVisible = !_passwordVisible);
   }
@@ -284,9 +227,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _openLogin() {
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => LoginScreen(previewMode: widget.previewMode),
+      ),
+    );
   }
 
   @override
@@ -294,6 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return RegisterView(
       formKey: _formKey,
       emailController: _email,
+      phoneNumberController: _phoneNumber,
       passwordController: _password,
       passwordConfirmController: _passwordConfirm,
       isLoading: _loading,
@@ -303,8 +249,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       onRegister: _register,
       onPasswordVisibilityChanged: _togglePasswordVisibility,
       onPasswordConfirmVisibilityChanged: _togglePasswordConfirmVisibility,
-      onGoogleSignUp: _googleSignUp,
-      onFacebookSignUp: _facebookSignUp,
       onLogin: _openLogin,
     );
   }

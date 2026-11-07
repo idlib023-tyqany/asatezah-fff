@@ -12,26 +12,12 @@ if (signingPropertiesFile.exists()) {
     signingPropertiesFile.withInputStream { signingProperties.load(it) }
 }
 
-def authPropertiesFile = rootProject.file("auth.properties")
-def authProperties = new Properties()
-if (authPropertiesFile.exists()) {
-    authPropertiesFile.withInputStream { authProperties.load(it) }
-}
-
-def facebookAppId = authProperties.getProperty("facebookAppId", "").trim()
-def facebookClientToken = authProperties.getProperty("facebookClientToken", "").trim()
-
 def releaseRequested = gradle.startParameter.taskNames.any {
     it.toLowerCase().contains("release")
 }
 if (releaseRequested && !signingPropertiesFile.exists()) {
     throw new GradleException(
         "Release signing is not configured. Create frontend/android/key.properties using README.md."
-    )
-}
-if (releaseRequested && (facebookAppId.isEmpty() || facebookClientToken.isEmpty())) {
-    throw new GradleException(
-        "Facebook Android sign-in is not configured. Add facebookAppId and facebookClientToken to frontend/android/auth.properties."
     )
 }
 
@@ -89,9 +75,6 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["usesCleartextTraffic"] = "false"
-        resValue "string", "facebook_app_id", facebookAppId.isEmpty() ? "0" : facebookAppId
-        resValue "string", "facebook_client_token", facebookClientToken.isEmpty() ? "missing" : facebookClientToken
-        resValue "string", "fb_login_protocol_scheme", "fb" + (facebookAppId.isEmpty() ? "0" : facebookAppId)
     }
 
     buildTypes {

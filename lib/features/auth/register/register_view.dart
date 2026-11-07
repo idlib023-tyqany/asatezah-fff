@@ -6,6 +6,7 @@ class RegisterView extends StatelessWidget {
   const RegisterView({
     required this.formKey,
     required this.emailController,
+    required this.phoneNumberController,
     required this.passwordController,
     required this.passwordConfirmController,
     required this.isLoading,
@@ -15,14 +16,13 @@ class RegisterView extends StatelessWidget {
     required this.onRegister,
     required this.onPasswordVisibilityChanged,
     required this.onPasswordConfirmVisibilityChanged,
-    required this.onGoogleSignUp,
-    required this.onFacebookSignUp,
     required this.onLogin,
     super.key,
   });
 
   final GlobalKey<FormState> formKey;
   final TextEditingController emailController;
+  final TextEditingController phoneNumberController;
   final TextEditingController passwordController;
   final TextEditingController passwordConfirmController;
   final bool isLoading;
@@ -32,8 +32,6 @@ class RegisterView extends StatelessWidget {
   final VoidCallback onRegister;
   final VoidCallback onPasswordVisibilityChanged;
   final VoidCallback onPasswordConfirmVisibilityChanged;
-  final VoidCallback onGoogleSignUp;
-  final VoidCallback onFacebookSignUp;
   final VoidCallback onLogin;
 
   @override
@@ -76,6 +74,28 @@ class RegisterView extends StatelessWidget {
                               !value.contains('@'))
                           ? 'أدخل بريداً صحيحاً'
                           : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: phoneNumberController,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.telephoneNumber],
+                      decoration: const InputDecoration(
+                        labelText: 'رقم الهاتف',
+                        hintText: '+9639XXXXXXXX',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                      validator: (value) {
+                        final phone = value?.replaceAll(
+                          RegExp(r'[\s().-]'),
+                          '',
+                        );
+                        return phone == null ||
+                                !RegExp(r'^\+?[1-9]\d{6,14}$').hasMatch(phone)
+                            ? 'أدخل رقم هاتف صحيحاً مع مفتاح الدولة'
+                            : null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -147,35 +167,6 @@ class RegisterView extends StatelessWidget {
                       loading: isLoading,
                       onPressed: onRegister,
                       text: 'إنشاء حساب',
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              'أو',
-                              style: TextStyle(color: theme.hintColor),
-                            ),
-                          ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: isLoading ? null : onGoogleSignUp,
-                      icon: const Icon(Icons.g_mobiledata_rounded),
-                      label: const Text('التسجيل بحساب جوجل'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: isLoading ? null : onFacebookSignUp,
-                      icon: const Icon(Icons.facebook_rounded),
-                      label: const Text('التسجيل بحساب فيسبوك'),
                     ),
                     const SizedBox(height: 16),
                     TextButton(

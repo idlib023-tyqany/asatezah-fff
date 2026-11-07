@@ -1,4 +1,5 @@
 import 'package:asatezah/core/models/paginated_list.dart';
+import 'package:asatezah/features/library/folders/folder_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -38,6 +39,37 @@ void main() {
         expect(page.total, 3);
         expect(page.hasNext, isFalse);
       },
+    );
+  });
+
+  test('folder and file models parse the folder API response', () {
+    final contents = FolderContents.fromJson({
+      'id': 12,
+      'name': 'الرياضيات',
+      'parent_id': null,
+      'category_id': 2,
+      'files': [
+        {
+          'id': 34,
+          'title': 'ملخص الجبر',
+          'filename': 'algebra.pdf',
+          'mime_type': 'application/pdf',
+          'raw_file_size': 2048,
+          'status': 'published',
+          'stats': {'downloads_count': 3},
+          'created_at': '2026-10-30T12:00:00Z',
+        },
+      ],
+    });
+
+    expect(contents.folder.id, 12);
+    expect(contents.folder.name, 'الرياضيات');
+    expect(contents.files.single.id, 34);
+    expect(contents.files.single.fileSize, 2048);
+    expect(
+      FolderItem.fromJson({'id': 12, 'name': 'الرياضيات', 'files_count': 1})
+          .filesCount,
+      1,
     );
   });
 }

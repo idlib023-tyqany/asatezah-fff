@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:asatezah/core/network/api_service.dart';
 import 'package:asatezah/features/auth/auth_service.dart';
+import 'package:asatezah/main.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({
@@ -52,7 +51,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       setState(() => _error = 'أدخل رمز الهاتف المكوّن من 6 أرقام.');
       return;
     }
-
     if (widget.previewMode) {
       setState(() => _error = 'وضع المعاينة: لم يتم التحقق من الرموز.');
       return;
@@ -65,12 +63,30 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     try {
       final auth = AuthService();
-      await auth.verifyContactChange(
-        verificationId: _challenge['verification_id'] as String,
-        emailCode: _emailCode.text,
-        phoneCode: _phoneCode.text,
-      );
-      if (mounted) Navigator.of(context).pop(true);
+      final purpose = _challenge['purpose'] as String? ?? 'login';
+      final verificationId = _challenge['verification_id'] as String;
+
+      if (purpose == 'contact_change') {
+        await auth.verifyContactChange(
+          verificationId: verificationId,
+          emailCode: _emailCode.text.trim(),
+          phoneCode: _phoneCode.text.trim(),
+        );
+        if (mounted) Navigator.of(context).pop(true);
+      } else {
+        // ✅ توثيق الدخول والتسجيل وتخزين التوكن في الجهاز
+        await auth.verifyAuthenticationCodes(
+          verificationId: verificationId,
+          emailCode: _emailCode.text.trim(),
+          phoneCode: _phoneCode.text.trim(),
+        );
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const RootScreen()),
+            (route) => false,
+          );
+        }
+      }
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } on TimeoutException {
@@ -96,11 +112,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       _loading = true;
       _error = null;
     });
+
     try {
       final auth = AuthService();
-      _challenge = await auth.resendContactChange(
-        _challenge['verification_id'] as String,
-      );
+      final purpose = _challenge['purpose'] as String? ?? 'login';
+      final verificationId = _challenge['verification_id'] as String;
+
+      if (purpose == 'contact_change') {
+        _challenge = await auth.resendContactChange(verificationId);
+      } else {
+        _challenge = await auth.resendVerification(verificationId);
+      }
       _emailCode.clear();
       _phoneCode.clear();
       if (mounted) setState(() {});

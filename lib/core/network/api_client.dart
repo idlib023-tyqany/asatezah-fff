@@ -13,7 +13,7 @@ class ApiClient {
         connectTimeout: ApiConfig.connectTimeout,
         receiveTimeout: ApiConfig.receiveTimeout,
         sendTimeout: ApiConfig.connectTimeout,
-        headers: const {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: const {'Accept': 'application/json'},
       ),
     );
     dio.interceptors.add(

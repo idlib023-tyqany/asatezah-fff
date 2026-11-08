@@ -1,4 +1,4 @@
-import 'package:asatezah/features/ai_assistant/ai_assistant_screen.dart';
+import 'package:asatezah/features/ai/ai_assistant_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:asatezah/features/admin/admin_panel/admin_panel_screen.dart';

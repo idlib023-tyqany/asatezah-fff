@@ -1,11 +1,14 @@
 import 'package:asatezah/core/network/api_service.dart';
 import 'package:asatezah/core/models/paginated_list.dart';
+
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
+
 import 'resource_hub_model.dart';
 
 /// CommentService (CommentRemoteDataSource): إدارة عمليات التعليقات الخاصة بالملفات
@@ -15,7 +18,11 @@ class CommentService {
   CommentService({ApiService? apiService}) : _api = apiService ?? ApiService();
 
   /// جلب التعليقات الخاصة بملف معين مع دعم الترقيم (Pagination)
-  Future<List<Comment>> fetchComments(int fileId, {int page = 1, int perPage = 20}) async {
+  Future<List<Comment>> fetchComments(
+    int fileId, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
     if (fileId <= 0) {
       throw ArgumentError('معرف الملف غير صالح');
     }
@@ -54,7 +61,10 @@ class CommentService {
       throw ArgumentError('لا يمكن إرسال تعليق فارغ');
     }
 
-    final result = await _api.post('/files/$fileId/comments', body: {'body': trimmedBody});
+    final result = await _api.post(
+      '/files/$fileId/comments',
+      body: {'body': trimmedBody},
+    );
 
     return _parseCommentResponse(result);
   }
@@ -70,7 +80,10 @@ class CommentService {
       throw ArgumentError('لا يمكن تعديل التعليق إلى نص فارغ');
     }
 
-    final result = await _api.put('/comments/$commentId', body: {'body': trimmedBody});
+    final result = await _api.put(
+      '/comments/$commentId',
+      body: {'body': trimmedBody},
+    );
 
     return _parseCommentResponse(result);
   }
@@ -116,7 +129,8 @@ class LibraryService {
     return _instance!;
   }
 
-  LibraryService._internal({ApiService? apiService}) : _api = apiService ?? ApiService();
+  LibraryService._internal({ApiService? apiService})
+    : _api = apiService ?? ApiService();
 
   /// إعادة تعيين الـ Singleton (تُستخدم أساساً عند كتابة unit tests)
   static void resetInstance() {
@@ -145,14 +159,20 @@ class LibraryService {
       'per_page': perPage.toString(),
       if (_isNotBlank(sort)) 'sort': sort!.trim(),
       if (_isNotBlank(query)) 'q': query!.trim(),
-      if (categoryId != null && categoryId > 0) 'category_id': categoryId.toString(),
-      if (materialId != null && materialId > 0) 'material_id': materialId.toString(),
-      if (minRating != null && minRating >= 1) 'min_rating': minRating.toString(),
+      if (categoryId != null && categoryId > 0)
+        'category_id': categoryId.toString(),
+      if (materialId != null && materialId > 0)
+        'material_id': materialId.toString(),
+      if (minRating != null && minRating >= 1)
+        'min_rating': minRating.toString(),
     };
 
     final result = await _api.get('/files', queryParams: params);
 
-    return PaginatedList<FileItem>.fromJson(result, (json) => FileItem.fromJson(json));
+    return PaginatedList<FileItem>.fromJson(
+      result,
+      (json) => FileItem.fromJson(json),
+    );
   }
 
   /// جلب تفاصيل ملف محدد
@@ -186,7 +206,8 @@ class LibraryService {
         .map((e) {
           try {
             // معالجة حالة ما إذا كان كائن المفضلة يحتوي على الملف بداخل مفتاح 'file' أو مباشرة
-            final fileJson = (e.containsKey('file') && e['file'] is Map<String, dynamic>)
+            final fileJson =
+                (e.containsKey('file') && e['file'] is Map<String, dynamic>)
                 ? e['file'] as Map<String, dynamic>
                 : e;
             return FileItem.fromJson(fileJson);
@@ -233,7 +254,10 @@ class LibraryService {
         .whereType<CatalogItem>()
         .toList();
 
-    _cachedFilters = FilterCatalog(categories: categories, materials: materials);
+    _cachedFilters = FilterCatalog(
+      categories: categories,
+      materials: materials,
+    );
     return _cachedFilters!;
   }
 
@@ -270,7 +294,9 @@ class LibraryService {
   Future<void> reportFile(int fileId, String? reason) async {
     if (fileId <= 0) throw ArgumentError('معرف الملف غير صالح');
 
-    final body = <String, dynamic>{if (_isNotBlank(reason)) 'reason': reason!.trim()};
+    final body = <String, dynamic>{
+      if (_isNotBlank(reason)) 'reason': reason!.trim(),
+    };
 
     await _api.post('/reports/$fileId', body: body);
   }
@@ -306,7 +332,8 @@ class OfflineService {
     return _instance;
   }
 
-  OfflineService._internal({ApiService? apiService}) : _api = apiService ?? ApiService();
+  OfflineService._internal({ApiService? apiService})
+    : _api = apiService ?? ApiService();
 
   static const String _keyOfflineFiles = 'offline_files';
 
@@ -338,6 +365,10 @@ class OfflineService {
 
       // إضافة التوكن الخاص بالمستخدم إذا وُجد
       final token = _api.token;
+      if (token != null && token.isNotEmpty) {
+        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      }
+
       if (token != null && token.isNotEmpty) {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       }
@@ -425,7 +456,10 @@ class OfflineService {
   /// فتح الملف المحفوظ محلياً باستخدام التطبيقات المتاحة على الجهاز
   Future<OpenResult> openOfflineFile(String path) async {
     if (path.isEmpty || !await File(path).exists()) {
-      return OpenResult(type: ResultType.fileNotFound, message: 'الملف غير موجود على ذاكرة الجهاز');
+      return OpenResult(
+        type: ResultType.fileNotFound,
+        message: 'الملف غير موجود على ذاكرة الجهاز',
+      );
     }
     return await OpenFilex.open(path);
   }
@@ -444,7 +478,8 @@ class OfflineService {
         final itemId = map['id'] as int?;
 
         if (itemId == fileId) {
-          final path = map['localPath'] as String? ?? map['local_path'] as String?;
+          final path =
+              map['localPath'] as String? ?? map['local_path'] as String?;
           if (path != null) {
             final f = File(path);
             if (await f.exists()) {
@@ -500,7 +535,9 @@ class OfflineService {
   String _extractExtension(String url) {
     try {
       final uri = Uri.parse(url);
-      final lastSegment = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
+      final lastSegment = uri.pathSegments.isNotEmpty
+          ? uri.pathSegments.last
+          : '';
       if (lastSegment.contains('.')) {
         final ext = lastSegment.split('.').last.toLowerCase();
         if (ext.length <= 4) return ext; // امتدادات قياسية مثل pdf, docx, epub
@@ -536,9 +573,15 @@ class ResourcePickerService {
   }) async {
     final List<PlatformFile> files;
     if (allowMultiple) {
-      files = await FilePicker.pickFiles(type: type, allowedExtensions: allowedExtensions);
+      files = await FilePicker.pickFiles(
+        type: type,
+        allowedExtensions: allowedExtensions,
+      );
     } else {
-      final file = await FilePicker.pickFile(type: type, allowedExtensions: allowedExtensions);
+      final file = await FilePicker.pickFile(
+        type: type,
+        allowedExtensions: allowedExtensions,
+      );
       files = file == null ? [] : [file];
     }
 
@@ -560,7 +603,8 @@ class UploadService {
     return _instance;
   }
 
-  UploadService._internal({ApiService? apiService}) : _api = apiService ?? ApiService();
+  UploadService._internal({ApiService? apiService})
+    : _api = apiService ?? ApiService();
 
   /// رفع ملف جديد للمراجعة من قبل الإدارة
   ///
@@ -598,8 +642,10 @@ class UploadService {
     final fields = <String, String>{
       'title': trimmedTitle,
       if (_isNotBlank(description)) 'description': description!.trim(),
-      if (categoryId != null && categoryId > 0) 'category_id': categoryId.toString(),
-      if (materialId != null && materialId > 0) 'material_id': materialId.toString(),
+      if (categoryId != null && categoryId > 0)
+        'category_id': categoryId.toString(),
+      if (materialId != null && materialId > 0)
+        'material_id': materialId.toString(),
     };
 
     final result = await _api.uploadFile('/upload', filePath, fields: fields);

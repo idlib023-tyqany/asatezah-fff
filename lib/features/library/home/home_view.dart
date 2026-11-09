@@ -32,7 +32,7 @@ class HomeView extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.grid_view_outlined),
             activeIcon: Icon(Icons.grid_view_rounded),
-            label: 'المكتبة',
+            label: 'لوحة الأستاذ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.auto_awesome_outlined),
@@ -104,7 +104,7 @@ class LibraryTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المكتبة'),
+        title: const Text('لوحة الأستاذ'),
         actions: [
           IconButton(
             icon: const Icon(Icons.auto_awesome, color: Colors.amber),
@@ -242,9 +242,10 @@ class LibraryTabView extends StatelessWidget {
         ],
       ),
       floatingActionButton: canContribute
-          ? FloatingActionButton(
+          ? FloatingActionButton.extended(
               onPressed: onUpload,
-              child: const Icon(Icons.upload_file),
+              icon: const Icon(Icons.upload_file),
+              label: const Text('رفع محتوى تعليمي'),
             )
           : null,
     );
@@ -519,4 +520,3 @@ class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
     return widget.child;
   }
 }
-

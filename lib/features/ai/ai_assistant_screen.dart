@@ -13,7 +13,8 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final GeminiService _geminiService = GeminiService();
   final TextEditingController _controller = TextEditingController();
 
-  String _response = 'أهلاً بك! أنا مساعدك الذكي من أساتذة. كيف يمكنني مساعدتك في دراستك اليوم؟';
+  String _response =
+      'أهلاً بك أستاذي. أستطيع مساعدتك في تحضير الدروس، إعداد الأسئلة، وشرح الأفكار العلمية.';
   bool _isLoading = false;
 
   void _sendMessage() async {
@@ -38,7 +39,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('المساعد الذكي (Gemini AI)'), centerTitle: true),
+      appBar: AppBar(title: const Text('مساعد الأستاذ الذكي'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -64,7 +65,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'اكتب سؤالك الدراسي هنا (مثلاً: اشرح لي قانون...)',
+                      hintText: 'مثال: حضّر درس التحليل أو أنشئ أسئلة عن الحركة...',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),

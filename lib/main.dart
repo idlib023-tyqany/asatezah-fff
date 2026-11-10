@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'screens/folders/folder_explorer_screen.dart';
-import 'screens/tools/teacher_tools_screen.dart';
-import 'screens/ai/teacher_ai_screen.dart';
+
+import 'features/auth/auth_service.dart';
+import 'features/auth/login/login_widget.dart';
+import 'features/folder_explorer/folder_explorer_widget.dart';
+import 'features/teacher_ai/teacher_ai_widget.dart';
+import 'features/teacher_tools/teacher_tools_widget.dart';
 
 void main() {
   runApp(const AsatezahApp());
 }
-
-typedef RootScreen = MainTeacherNavScreen;
 
 class AsatezahApp extends StatelessWidget {
   const AsatezahApp({super.key});
@@ -23,12 +24,46 @@ class AsatezahApp extends StatelessWidget {
         fontFamily: 'Cairo',
       ),
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child!,
-        );
+        return Directionality(textDirection: TextDirection.rtl, child: child!);
       },
-      home: const MainTeacherNavScreen(),
+      home: const RootScreen(),
+    );
+  }
+}
+
+class RootScreen extends StatefulWidget {
+  const RootScreen({super.key});
+
+  @override
+  State<RootScreen> createState() => _RootScreenState();
+}
+
+class _RootScreenState extends State<RootScreen> {
+  final AuthService _auth = AuthService();
+  bool _isRestoringSession = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreSession();
+  }
+
+  Future<void> _restoreSession() async {
+    await _auth.init();
+    if (mounted) setState(() => _isRestoringSession = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isRestoringSession) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return ListenableBuilder(
+      listenable: _auth,
+      builder: (context, _) => _auth.isAuthenticated
+          ? const MainTeacherNavScreen()
+          : const LoginScreen(),
     );
   }
 }
@@ -44,9 +79,9 @@ class _MainTeacherNavScreenState extends State<MainTeacherNavScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    FolderExplorerScreen(),
-    TeacherToolsScreen(),
-    TeacherAiScreen(),
+    FolderExplorerWidget(),
+    TeacherToolsWidget(),
+    TeacherAiWidget(),
   ];
 
   @override

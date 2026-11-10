@@ -1,9 +1,9 @@
-import 'package:asatezah/features/ai/ai_assistant_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:asatezah/core/theme/app_theme.dart';
 import 'package:asatezah/core/widgets/file_card.dart';
 import 'package:asatezah/features/resource_hub/resource_hub/resource_hub_model.dart';
+import 'package:asatezah/features/teacher_ai/teacher_ai_widget.dart';
 
 class HomeView extends StatelessWidget {
   final int tabIndex;
@@ -112,7 +112,7 @@ class LibraryTabView extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AiAssistantScreen()),
+                MaterialPageRoute(builder: (_) => const TeacherAiWidget()),
               );
             },
           ),

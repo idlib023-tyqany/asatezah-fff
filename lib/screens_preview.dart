@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/auth/login/login_screen.dart';
-import 'features/auth/otp/otp_verification_screen.dart';
-import 'features/auth/profile_settings_screen.dart';
-import 'features/auth/register/register_screen.dart';
-import 'features/library/home/home_screen.dart';
+import 'features/auth/login/login_widget.dart';
+import 'features/auth/otp/otp_verification_widget.dart';
+import 'features/auth/profile_settings_widget.dart';
+import 'features/auth/register/register_widget.dart';
+import 'features/library/home/home_widget.dart';
 
 void main() {
   runApp(const ScreensPreviewApp());
